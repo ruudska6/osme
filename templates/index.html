@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+
+
+  
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>향수 추천 챗봇</title>
+<!-- Bootstrap CSS 추가 -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<!-- 사용자 정의 스타일 -->
+<style>
+  body { background-color: #f8f9fa; font-family: Arial, sans-serif; }
+  .chat-container { max-width: 700px; margin: auto; margin-top: 50px; }
+  .chat-box { background: white; height: 400px; overflow-y: auto; padding: 15px; border-radius: 5px; border: 1px solid #e2e2e2; }
+  .chat-input { margin-top: 20px; }
+  .user-message { text-align: right; margin-bottom: 5px; }
+  .bot-message { text-align: left; margin-bottom: 5px; }
+  .message { padding: 5px 10px; display: inline-block; border-radius: 20px; }
+  .user-message .message { background-color: #007bff; color: white; }
+  .bot-message .message { background-color: #e2e2e2; }
+  /* 상단 제목 스타일 */
+  .header-title {
+      text-align: center; /* 제목을 가운데 정렬 */
+      margin-top: 0; /* 상단 여백 없음 */
+      padding-top: 10px; /* 상단 내부 여백을 줘서 제목과 상단 가장자리 사이에 약간의 공간을 둠 */
+  }
+
+</style>
+</head>
+<body> 
+
+  <div class="header-title">
+    <h1>향수 추천 서비스 by 오스메</h1>
+</div>
+  
+<div class="chat-container">
+  <div class="chat-box" id="chat-box"></div>
+  <div class="chat-input">
+    <input type="text" id="user-input" class="form-control" placeholder="당신이 원하는 향의 형용사를 입력하세요...">
+    <button onclick="sendMessage()" class="btn btn-primary btn-block mt-3">추천 받기</button>
+  </div>
+</div>
+
+<!-- JavaScript Bundle with Popper (Bootstrap에 필요한 JavaScript) -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+// 챗봇으로부터 메시지를 받아서 채팅 박스에 표시하는 함수
+function addMessageToChatbox(message, isUser) {
+  var chatBox = document.getElementById('chat-box');
+  var messageDiv = document.createElement('div');
+  messageDiv.innerHTML = `<span class="message">${message}</span>`;
+  messageDiv.className = isUser ? 'user-message' : 'bot-message';
+  chatBox.appendChild(messageDiv);
+  chatBox.scrollTop = chatBox.scrollHeight; // 항상 최신 메시지가 보이도록 스크롤
+}
+
+// 사용자가 입력한 메시지를 서버로 보내고 응답을 받는 함수
+function sendMessage() {
+  var userInput = document.getElementById('user-input');
+  var message = userInput.value.trim();
+  if(message === '') return; // 입력이 없으면 아무것도 하지 않음
+
+  addMessageToChatbox(message, true); // 챗박스에 사용자 메시지 추가
+
+  fetch('/chat', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ message: message }),
+  })
+  .then(response => response.json())
+  .then(data => {
+    addMessageToChatbox(data.message, false); // 챗박스에 챗봇 응답 추가
+  })
+  .catch((error) => {
+    console.error('Error:', error);
+    addMessageToChatbox('죄송합니다, 오류가 발생했습니다.', false);
+  });
+
+  userInput.value = ''; // 입력 필드 초기화
+}
+</script>
+</body>
+</html>
